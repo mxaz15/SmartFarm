@@ -1,93 +1,86 @@
-// DHT Temperature & Humidity Sensor
-// Unified Sensor Library Example
-// Written by Tony DiCola for Adafruit Industries
-// Released under an MIT license.
-
-// REQUIRES the following Arduino libraries:
-// - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
-// - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
-
 #include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <DHT_U.h>
-
-#define DHTPIN 14     // Digital pin connected to the DHT sensor 
-// Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
-// Pin 15 can work but DHT must be disconnected during program upload.
-
-// Uncomment the type of sensor in use:
-#define DHTTYPE    DHT11     // DHT 11
-//define DHTTYPE    DHT22     // DHT 22 (AM2302)
-//#define DHTTYPE    DHT21     // DHT 21 (AM2301)
-
-// See guide for details on sensor wiring and usage:
-//   https://learn.adafruit.com/dht/overview
-
-DHT_Unified dht(DHTPIN, DHTTYPE);
+#include <ambiente.h>
+#include <suelo.h>
+#include <control.h>
+#define DEBUG_MAIN
+#define S1_SENSOR_PIN A3
 
 uint32_t delayMS;
-int _moisture,sensor_analog;
+int error;
+int data_suelo; //soil humedity level of sensor 1
 const int sensor_pin = A3;  /* Soil moisture sensor O/P pin */
+float *data_dht;
+uint32_t time_now = 0;
+uint32_t time_refresh = 0;
 
 void setup() {
   Serial.begin(115200);
   // Initialize device.
-  dht.begin();
-  Serial.println(F("DHTxx Unified Sensor Example"));
-  // Print temperature sensor details.
-  sensor_t sensor;
-  dht.temperature().getSensor(&sensor);
-  Serial.println(F("------------------------------------"));
-  Serial.println(F("Temperature Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
-  Serial.println(F("------------------------------------"));
-  // Print humidity sensor details.
-  dht.humidity().getSensor(&sensor);
-  Serial.println(F("Humidity Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
-  Serial.println(F("------------------------------------"));
+  ambiente_init();
+  control_init_out();
   // Set delay between sensor readings based on sensor details.
-  delayMS = sensor.min_delay / 1000;
+  delayMS = ambiente_min_delay_sensor()/ 1000;
 }
 
 void loop() {
-  // Delay between measurements.
-  delay(delayMS);
   // Get temperature event and print its value.
-  sensors_event_t event;
+  time_now = millis();
 
-  dht.temperature().getEvent(&event);
-  if (isnan(event.temperature)) {
-    Serial.println(F("Error reading temperature!"));
-  }
-  else {
+  if(time_now - time_refresh > delayMS)
+  {
+    time_refresh = time_now;
+
+  data_dht =  ambiente_get_info();
+
+  if (data_dht[SENSOR_ERROR_IDX] == NO_ERROR )
+  {
+    #ifdef DEBUG_MAIN
     Serial.print(F("Temperature: "));
-    Serial.print(event.temperature);
+    Serial.print(data_dht[0]);
     Serial.println(F("°C"));
-  }
-  // Get humidity event and print its value.
-  dht.humidity().getEvent(&event);
-  if (isnan(event.relative_humidity)) {
-    Serial.println(F("Error reading humidity!"));
-  }
-  else {
     Serial.print(F("Humidity: "));
-    Serial.print(event.relative_humidity);
+    Serial.print(data_dht[1]);
     Serial.println(F("%"));
+    #endif
   }
-    sensor_analog = analogRead(sensor_pin);
-   _moisture = ( 100 - ( (sensor_analog/4095.00) * 100 ) );
+  else{
+    error = int(data_dht[2]);
+    switch (error)
+    {
+    case ERROR_TEMPERATURA:
+        #ifdef DEBUG_MAIN
+        Serial.println(F("Error reading temperature!"));
+        #endif
+
+      break;
+    case ERROR_HUMEDAD:
+      #ifdef DEBUG_MAIN
+                  Serial.println(F("Error reading humidity!"));
+      #endif
+    break;
+     
+    default:
+
+      #ifdef DEBUG_MAIN
+      Serial.println(F("Comunication error!"));
+      #endif
+
+      break;
+
+    }
+    
+
+  }
+   
+  
+   data_suelo = suelo_nivel(S1_SENSOR_PIN);
+  #ifdef DEBUG_MAIN
    Serial.print("H_Suelo = ");
-  Serial.print(_moisture);  /* Print Temperature on the serial window */
-  Serial.println("%");
+   Serial.print(data_suelo);  /* Print Temperature on the serial window */
+   Serial.println("%");
+   #endif
+   control_Temperatura(data_dht);
+   control_Suelo(data_suelo);
+
+   }
 }
