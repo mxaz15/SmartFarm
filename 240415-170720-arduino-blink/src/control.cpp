@@ -1,7 +1,7 @@
 #include <control.h>
 #include <ambiente.h>
 #define DEBUG_CONTROL
-#define CONTROL_MAX_TEMP 26
+#define CONTROL_MAX_TEMP 22
 #define CONTROL_MIN_TEMP 20
 #define CONTROL_MAX_HUM 30
 #define CONTROL_MIN_HUM 20
