@@ -2,32 +2,89 @@
 #include <ambiente.h>
 #include <suelo.h>
 #include <control.h>
-
 //WEBSERVWER START INCLUDES
 #include <WiFi.h>
 #include <Arduino.h>
 #include <Wire.h>
 
+//WEBSERVER INCLUDES
+#ifdef ESP32
+#include <AsyncTCP.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#include <ESPAsyncTCP.h>
+#endif
+#include <ESPAsyncWebServer.h>
 
-// Replace the X's with your network credentials
-const char* ssid = "moto";
-const char* password = "moto1234";
+//String convertion
+#include <iostream>
+#include <string>
 
-// Set web server port number to 80
-WiFiServer server(80);
 
-// Variable to store the HTTP request
-String header;
+//INCLUDES
+//#define DEBUG_MAIN
+#define DEBUG_HTML
+#define S1_SENSOR_PIN A3
 
-// Auxiliar variables to store the current output state
-String relay1State = "off";
-String relay2State = "off";
+//START WEBSERVER
+AsyncWebServer server(80);
+const char* ssid = "TP-Link_8CD8";
+const char* password = "wifi2024";
+const char* PARAM_MESSAGE = "message";
 
-// Assign output variables to GPIO pins
-//const int output26 = 26;
-//const int output27 = 27;
-const int Relay1 = 15;
-const int Relay2 = 2;
+const char* PARAM_INPUT_1 = "Temperatura_max";
+const char* PARAM_INPUT_2 = "Temperatura_min";
+const char* PARAM_INPUT_3 = "Humedad_max";
+const char* PARAM_INPUT_4 = "Humedad_min";
+const char* PARAM_INPUT_5 = "Suelo_max";
+const char* PARAM_INPUT_6 = "Suelo_min";
+
+//Var to storing value
+String T_max;
+String T_min;
+String H_max;
+String H_min;
+String S_max;
+String S_min;
+
+
+// HTML web page to handle 3 input fields (input1, input2, input3)
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html><head>
+  <title>ESP Input Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+  <form action="/get">
+    Temperatura Max: <input type="text" name="Temperatura_max">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    Temperatura min: <input type="text" name="Temperatura_min">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    Humedad max: <input type="text" name="Humedad_max">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    Humedad min: <input type="text" name="Humedad_min">
+    <input type="submit" value="Submit">
+  </form><br>
+   <form action="/get">
+    Suelo max: <input type="text" name="Suelo_max">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    Suelo min: <input type="text" name="Suelo_min">
+    <input type="submit" value="Submit">
+  </form>
+</body></html>)rawliteral";
+
+void notFound(AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
+}
+
+//END WEBSERVER
 
 // Current time
 unsigned long currentTime = millis();
@@ -35,13 +92,6 @@ unsigned long currentTime = millis();
 unsigned long previousTime = 0; 
 // Define timeout time in milliseconds (example: 2000ms = 2s)
 const long timeoutTime = 2000;
-
-//WEBSERVWER ENDS INCLUDES
-
-
-//INCLUDES
-#define DEBUG_MAIN
-#define S1_SENSOR_PIN A3
 
 uint32_t delayMS;
 int error;
@@ -59,144 +109,86 @@ void setup() {
   // Set delay between sensor readings based on sensor details.
   //delayMS = ambiente_min_delay_sensor()/ 1000;
   delayMS = 2000;
-  //STAR WEBSERVER
-  pinMode(Relay1, OUTPUT);
-  pinMode(Relay2, OUTPUT);
-  // Set outputs to LOW
-  digitalWrite(Relay1, LOW);
-  digitalWrite(Relay2, LOW);
 
-    // Connect to Wi-Fi network with SSID and password
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  // Print local IP address and start web server
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
 
-  server.begin();
+//START WEBSERVER
+  Serial.begin(115200);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+        Serial.printf("WiFi Failed!\n");
+        return;
+    }
 
-  //END WEBSERVER
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
+
+  // Send web page with input fields to client
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", index_html);
+  });
+
+  // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
+  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    String inputMessage;
+    String inputParam;
+    // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
+    if (request->hasParam(PARAM_INPUT_1)) {
+      inputMessage = request->getParam(PARAM_INPUT_1)->value();
+      inputParam = PARAM_INPUT_1;
+      T_max = inputMessage;
+    }
+    // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_2)) {
+      inputMessage = request->getParam(PARAM_INPUT_2)->value();
+      inputParam = PARAM_INPUT_2;
+      T_min = inputMessage;
+    }
+    // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_3)) {
+      inputMessage = request->getParam(PARAM_INPUT_3)->value();
+      inputParam = PARAM_INPUT_3;
+      H_max = inputMessage;
+    }
+    else if (request->hasParam(PARAM_INPUT_4)) {
+      inputMessage = request->getParam(PARAM_INPUT_4)->value();
+      inputParam = PARAM_INPUT_4;
+      H_min = inputMessage;
+    }
+    else if (request->hasParam(PARAM_INPUT_5)) {
+      inputMessage = request->getParam(PARAM_INPUT_5)->value();
+      inputParam = PARAM_INPUT_5;
+      S_max = inputMessage;
+    }
+    else if (request->hasParam(PARAM_INPUT_6)) {
+      inputMessage = request->getParam(PARAM_INPUT_6)->value();
+      inputParam = PARAM_INPUT_6;
+      S_min = inputMessage;
+    }
+    else {
+      inputMessage = "No message sent";
+      inputParam = "none";
+    }
+    Serial.println(inputMessage);
+    request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" 
+                                     + inputParam + ") with value: " + inputMessage +
+                                     "<br><a href=\"/\">Return to Home Page</a>");
+  });
+
+    server.onNotFound(notFound);
+
+    server.begin();
+
+    //END WEBSERVER
+
+
+
+
 
 }
 
 void loop() {
 
-//START WEBSERVER
-
-  WiFiClient client = server.available();   // Listen for incoming clients
-
-  if (client) {                             // If a new client connects,
-    currentTime = millis();
-    previousTime = currentTime;
-    #ifdef DEBUG_MAIN
-    Serial.println("New Client.");          // print a message out in the serial port
-    #endif
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected() && currentTime - previousTime <= timeoutTime) {  // loop while the client's connected
-      currentTime = millis();
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
-        header += c;
-        if (c == '\n') {                    // if the byte is a newline character
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
-          if (currentLine.length() == 0) {
-            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-            // and a content-type so the client knows what's coming, then a blank line:
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type:text/html");
-            client.println("Connection: close");
-            client.println();
-
-            // turns the GPIOs on and off
-            if (header.indexOf("GET /26/on") >= 0) {
-              Serial.println("GPIO 26 on");
-              relay1State = "on";
-              digitalWrite(Relay1, HIGH);
-
-            } else if (header.indexOf("GET /26/off") >= 0) {
-              Serial.println("GPIO 26 off");
-              relay1State = "off";
-              digitalWrite(Relay1, LOW);
-
-            } else if (header.indexOf("GET /27/on") >= 0) {
-              Serial.println("GPIO 27 on");
-              relay2State = "on";
-              digitalWrite(Relay2, HIGH);
-            } else if (header.indexOf("GET /27/off") >= 0) {
-              Serial.println("GPIO 27 off");
-              relay2State = "off";
-              digitalWrite(Relay2, LOW);
-            }
-
-            // Display the HTML web page
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-                        // CSS to style the on/off buttons 
-            // Feel free to change the background-color and font-size attributes to fit your preferences
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #555555;}</style></head>");
-
-
-
-            // Web Page Heading
-            client.println("<body><h1>ESP32 Web Server</h1>");
-            client.println("<p>Adapted by Osvaldo Cantone <a href=http://www.cantone.com.ar/wordpress/esp32-web-server-relay-control-lcd-i2c-display/>tecteach.net</a> </p>");
-
-            // Display current state, and ON/OFF buttons for GPIO 26  
-            client.println("<p>Relay 1 (GPIO 15) - State: " + relay1State + "</p>");
-            // If the output26State is off, it displays the ON button       
-            if (relay1State=="off") {
-              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
-            } 
-
-            // Display current state, and ON/OFF buttons for GPIO 27  
-            client.println("<p>Relay 2 (GPIO 2) - State: " + relay2State + "</p>");
-            // If the output27State is off, it displays the ON button       
-            if (relay2State=="off") {
-              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
-            client.println("</body></html>");
-
-            // The HTTP response ends with another blank line
-            client.println();
-            // Break out of the while loop
-            break;
-          } else { // if you got a newline, then clear currentLine
-            currentLine = "";
-          }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
-        }
-      }
-    }
-    // Clear the header variable
-    header = "";
-    // Close the connection
-    client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println("");
-  }
-
-
-
-  //END WEBSERVER
-  
 
   // Get temperature event and print its value.
   time_now = millis();
@@ -207,6 +199,20 @@ void loop() {
 
     data_dht =  ambiente_get_info();
 
+    #ifdef DEBUG_HTML
+    Serial.print("T_max ");
+    Serial.println(T_max);
+    Serial.print("T_min ");
+    Serial.println(T_min);
+    Serial.print("H_max ");
+    Serial.println(H_max);
+    Serial.print("H_mim ");
+    Serial.println(H_min);
+    Serial.print("S_max ");
+    Serial.println(S_max);
+    Serial.print("S_min ");
+    Serial.println(S_min);
+    #endif
     if (data_dht[SENSOR_ERROR_IDX] == NO_ERROR )
     {
     #ifdef DEBUG_MAIN

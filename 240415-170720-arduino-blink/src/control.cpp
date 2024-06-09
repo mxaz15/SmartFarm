@@ -1,6 +1,6 @@
 #include <control.h>
 #include <ambiente.h>
-#define DEBUG_CONTROL
+//#define DEBUG_CONTROL
 #define CONTROL_MAX_TEMP 22
 #define CONTROL_MIN_TEMP 20
 #define CONTROL_MAX_HUM 30
@@ -20,6 +20,15 @@
 #define PIN_HUMEDAD 32
 #define ENCENDER_PIN_HUM 1
 #define APAGAR_PIN_HUM 0
+
+//VAR TO STORING VALUE RANGE
+int control_T_max = 20;
+int control_T_min = 20;
+int control_H_max = 50;
+int control_H_min = 40;
+int control_S_max = 60;
+int control_S_min = 30;
+
 
 
 void control_init_out(void)
@@ -76,4 +85,10 @@ void control_Suelo(int hum_suelo)
         Serial.println("DEBUG: Apagar bomba");
         #endif
     }
+}
+
+void control_Set_T_max(int value)
+{
+    control_T_max = value;
+
 }
