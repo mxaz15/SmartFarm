@@ -87,8 +87,57 @@ void control_Suelo(int hum_suelo)
     }
 }
 
+//GETS FUNCTIONS
+
+int control_Get_T_max (void){
+    return control_T_max;
+}
+
+int control_Get_T_min(void)
+{
+    return control_T_min;
+}
+
+int control_Get_H_max(void)
+{
+    return control_H_max;
+}
+int control_Get_H_min(void)
+{
+    return control_H_min;
+}
+int control_Get_S_max(void)
+{
+    return control_S_max;
+}
+int control_Get_S_min(void)
+{
+    return control_S_min;
+}
+
+//SETS FUNCTION
+
 void control_Set_T_max(int value)
 {
     control_T_max = value;
-
+}
+void control_Set_T_min(int value)
+{
+     control_T_min = value;
+}
+void control_Set_H_max(int value)
+{
+    control_H_max = value;
+}
+void control_Set_H_min(int value)
+{
+    control_H_min = value;
+}
+void control_Set_S_max(int value)
+{
+    control_S_max = value;
+}
+void control_Set_S_min(int value)
+{
+    control_S_min = value;
 }
