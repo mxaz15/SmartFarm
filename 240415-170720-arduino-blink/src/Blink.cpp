@@ -138,39 +138,39 @@ void setup() {
       inputMessage = request->getParam(PARAM_INPUT_1)->value();
       inputParam = PARAM_INPUT_1;
       value = inputMessage.toInt();
-      control_Set_T_max(value);
+      if(value !=0){control_Set_T_max(value);}
     }
     // GET input2 value on <ESP_IP>/get?input2=<inputMessage> --- This is the Min temperature
     else if (request->hasParam(PARAM_INPUT_2)) {
       inputMessage = request->getParam(PARAM_INPUT_2)->value();
       inputParam = PARAM_INPUT_2;
       value = inputMessage.toInt();
-      control_Set_T_min(value);
+      if(value != 0 ){control_Set_T_min(value); }
     }
     // GET input3 value on <ESP_IP>/get?input3=<inputMessage> --- This is the Max humidity
     else if (request->hasParam(PARAM_INPUT_3)) {
       inputMessage = request->getParam(PARAM_INPUT_3)->value();
       inputParam = PARAM_INPUT_3;
       value = inputMessage.toInt();
-      control_Set_H_max(value);
+      if(value != 0 ){control_Set_H_max(value); }
     } // GET input4 value on <ESP_IP>/get?input3=<inputMessage> --- This is the Min humidity
     else if (request->hasParam(PARAM_INPUT_4)) {
       inputMessage = request->getParam(PARAM_INPUT_4)->value();
       inputParam = PARAM_INPUT_4;
       value = inputMessage.toInt();
-      control_Set_H_min(value);
+      if(value != 0 ){control_Set_H_min(value); }
     }// GET input5 value on <ESP_IP>/get?input3=<inputMessage> --- This is the Max soild humidity
     else if (request->hasParam(PARAM_INPUT_5)) {
       inputMessage = request->getParam(PARAM_INPUT_5)->value();
       inputParam = PARAM_INPUT_5;
       value = inputMessage.toInt();
-      control_Set_S_max(value);
+      if(value != 0 ){control_Set_S_max(value); }
     }// GET input6 value on <ESP_IP>/get?input3=<inputMessage> --- This is the Min Soild humidity
     else if (request->hasParam(PARAM_INPUT_6)) {
       inputMessage = request->getParam(PARAM_INPUT_6)->value();
       inputParam = PARAM_INPUT_6;
       value = inputMessage.toInt();
-      control_Set_S_min(value);
+      if(value != 0 ){control_Set_S_min(value); }
     }
     else {
       inputMessage = "No message sent";

@@ -29,6 +29,11 @@ int control_H_min = 40;
 int control_S_max = 60;
 int control_S_min = 30;
 
+//VAR ALARMS
+bool control_alm_T = false;
+bool control_alm_H = false;
+bool control_alm_S = false;
+
 
 
 void control_init_out(void)
@@ -43,47 +48,84 @@ void control_init_out(void)
 void control_Temperatura(float* p_data)
 {
     //Control de temperatura
-    if( p_data[SENSOR_TEMP_IDX] > CONTROL_MAX_TEMP )
+    if( p_data[SENSOR_TEMP_IDX] > control_T_max )
     {
         digitalWrite(PIN_FAN, ENCEDER_FAN);
+        control_alm_T = true;
         #ifdef DEBUG_CONTROL
 			        Serial.println("DEBUG: Encender FAN_T");
         #endif
-    }else{
+    }else if(p_data[SENSOR_TEMP_IDX] < control_T_min) 
+    {
         digitalWrite(PIN_FAN, APAGAR_FAN);
+        control_alm_T = true;
         #ifdef DEBUG_CONTROL
 			        Serial.println("DEBUG: Apagar fan_T");
         #endif
     }
+    else
+    {
+        digitalWrite(PIN_FAN, APAGAR_FAN);
+        control_alm_T = false;
+        #ifdef DEBUG_CONTROL
+			        Serial.println("DEBUG: Temperatura ok");
+        #endif
+    }
 
     //Control de humedad
-    if( p_data[SENSOR_HUM_IDX] > CONTROL_MAX_HUM )
+    if( p_data[SENSOR_HUM_IDX] > control_H_max )
     {
         digitalWrite(PIN_HUMEDAD, ENCENDER_PIN_HUM);
+        control_alm_H = true;
         #ifdef DEBUG_CONTROL
 			        Serial.println("DEBUG: Encender fan_H");
         #endif
-    }else{
+    }else if (p_data[SENSOR_HUM_IDX] < control_H_min)
+    {
         digitalWrite(PIN_HUMEDAD, APAGAR_PIN_HUM);
+        control_alm_H = true;         
         #ifdef DEBUG_CONTROL
-			        Serial.println("DEBUG: Apagar fan_H");
+			        Serial.println("DEBUG: ALARMA de humedad minima");
         #endif
+    }
+    else 
+    {
+        
+        digitalWrite(PIN_HUMEDAD, APAGAR_PIN_HUM);
+        control_alm_H = false;
+        #ifdef DEBUG_CONTROL
+			        Serial.println("DEBUG: Humedad ok");
+        #endif
+        
+
     }
 }
 /*Recibe el valor porcentual de humedad en el suelo  y habilita/deshabilita el PIN_PUMP que regula la cantidad de agua */
 void control_Suelo(int hum_suelo)
 {
-    if( hum_suelo < CONTROL_MIN_H_SUELO )
+    if( hum_suelo < control_S_min )
     {
         digitalWrite(PIN_PUMP, ENCEDER_PUMP);
+        control_alm_S = true;
         #ifdef DEBUG_CONTROL
 			        Serial.println("DEBUG: Encender bomba");
         #endif
-    }else{
+    }
+    else if (hum_suelo > control_S_max )
+    {
         digitalWrite(PIN_PUMP, APAGAR_PUMP);
+        control_alm_S = true;
         #ifdef DEBUG_CONTROL
         Serial.println("DEBUG: Apagar bomba");
         #endif
+    }
+    else{
+        digitalWrite(PIN_PUMP,APAGAR_PUMP);
+        control_alm_S = false;
+        #ifdef DEBUG_CONTROL
+		Serial.println("DEBUG:Nivel S ok");
+        #endif
+
     }
 }
 
@@ -91,6 +133,7 @@ void control_Suelo(int hum_suelo)
 
 int control_Get_T_max (void){
     return control_T_max;
+
 }
 
 int control_Get_T_min(void)
