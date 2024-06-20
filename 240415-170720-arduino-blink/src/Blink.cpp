@@ -53,30 +53,43 @@ const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html><head>
   <title>ESP Input Form</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head><body>
+  </head><body bgcolor=96c8a2>
+  <h1 align="center">AGRICULTURA INTELIGENTE</h1>
+  
   <form action="/get">
-    Temperatura Max: <input type="text" name="Temperatura_max">
-    <input type="submit" value="Submit">
-  </form><br>
+    <p align="center">Temperatura Maxima</p>
+    <p align="center"><input type="text" name="Temperatura_max" autofocus placeholder="Introducir Valor Numerico"> <input type="submit" value="Ingresar"></p>
+     </form><br>
+     
   <form action="/get">
-    Temperatura min: <input type="text" name="Temperatura_min">
-    <input type="submit" value="Submit">
-  </form><br>
+    <p align="center">Temperatura Mininma</p>
+    <p align="center"><input type="text" name="Temperatura_min" autofocus placeholder="Introducir Valor Numerico">
+    <input type="submit" value="Ingresar"></p>
+    </form><br>
+    
   <form action="/get">
-    Humedad max: <input type="text" name="Humedad_max">
-    <input type="submit" value="Submit">
-  </form><br>
+    <p align="center">Humedad Maxima</p>
+    <p align="center"><input type="text" name="Humedad_max" autofocus placeholder="Introducir Valor Numerico">
+    <input type="submit" value="Ingresar"></p>
+    </form><br>
+    
   <form action="/get">
-    Humedad min: <input type="text" name="Humedad_min">
-    <input type="submit" value="Submit">
-  </form><br>
-   <form action="/get">
-    Suelo max: <input type="text" name="Suelo_max">
-    <input type="submit" value="Submit">
-  </form><br>
+    <p align="center"> Humedad Minima</p>
+    <p align="center"><input type="text" name="Humedad_min" autofocus placeholder="Introducir Valor Numerico" >
+    <input type="submit" value="Ingresar"></p>
+    </form><br>
+    
   <form action="/get">
-    Suelo min: <input type="text" name="Suelo_min">
-    <input type="submit" value="Submit">
+    <p align="center">Nivel Maximo de Humedad en Suelo</p>
+     <p align="center"><input type="text" name="Suelo_max" autofocus placeholder="Introducir Valor Numerico">
+    <input type="submit" value="Ingresar"></p>
+    </form><br>
+    
+  <form action="/get">
+    <p align="center">Nivel Minimo de Humedad en Suelo</p> 
+    <p align="center"> <input type="text" name="Suelo_min" autofocus placeholder="Introducir Valor Numerico">
+    <input type="submit" value="Ingresar" ></p>
+    
   </form>
 </body></html>)rawliteral";
 
