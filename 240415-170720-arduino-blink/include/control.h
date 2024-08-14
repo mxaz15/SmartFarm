@@ -1,4 +1,4 @@
-
+#include <WString.h>
 void control_Temperatura(float* p_data);
 void control_Humedad(float* p_data);
 void control_Suelo(int hum_suelo);
@@ -15,4 +15,4 @@ int control_Get_H_max(void);
 int control_Get_H_min(void);
 int control_Get_S_max(void);
 int control_Get_S_min(void);
-
+bool control_Check_int(String number);

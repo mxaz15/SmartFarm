@@ -184,3 +184,29 @@ void control_Set_S_min(int value)
 {
     control_S_min = value;
 }
+
+bool control_Check_int(String number){
+
+     int i = 0;
+     bool returning = 0;
+    returning = true;
+
+
+ 
+    // Traversing string
+    for (char c : number) {
+        // Checking if the element is number
+        if (c >= '0' && c <= '9') {
+            i = i * 10 + (c - '0');
+        }
+        // Otherwise print bad output
+        else {
+            returning = false;
+            break;
+            
+        }
+    }
+ 
+    return returning;
+
+}
