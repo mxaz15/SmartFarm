@@ -198,9 +198,15 @@ void setup() {
       inputParam = "none";
     }
     Serial.println(inputMessage);
-    request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" 
+    /*request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" 
                                      + inputParam + ") with value: " + inputMessage +
+                                     "<br><a href=\"/\">Return to Home Page</a>");*/
+
+    request->send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP Return Home </title>"" </head><body bgcolor=96c8a2>""<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>""El parametro " 
+                                     + inputParam + " fue modificado, su valor actual es " + inputMessage +
                                      "<br><a href=\"/\">Return to Home Page</a>");
+                                     
+
   });
 
     server.onNotFound(notFound);
