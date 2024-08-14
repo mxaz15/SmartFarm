@@ -28,8 +28,16 @@
 
 //START WEBSERVER
 AsyncWebServer server(80);
-const char* ssid = "TP-Link_8CD8";
-const char* password = "wifi2024";
+//const char* ssid = "MarielSalinas";
+//const char* password = "segfue9199";
+
+//const char* ssid = "TP-Link_8CD8";
+//const char* password = "wifi2024";
+
+const char* ssid = "moto";
+const char* password = "moto1234";
+
+
 const char* PARAM_MESSAGE = "message";
 
 const char* PARAM_INPUT_1 = "Temperatura_max";
@@ -62,7 +70,7 @@ const char index_html[] PROGMEM = R"rawliteral(
      </form><br>
      
   <form action="/get">
-    <p align="center">Temperatura Mininma</p>
+    <p align="center">Temperatura Minima</p>
     <p align="center"><input type="text" name="Temperatura_min" autofocus placeholder="Introducir Valor Numerico">
     <input type="submit" value="Ingresar"></p>
     </form><br>

@@ -8,22 +8,22 @@
 #define CONTROL_MIN_H_SUELO 40
 #define CONTROL_MAX_H_SUELO 70
 //FAN
-#define PIN_FAN 33
+#define PIN_FAN 33//D13
 #define ENCEDER_FAN 1
 #define APAGAR_FAN 0
 //PUMP
-#define PIN_PUMP 25
+#define PIN_PUMP 25//D14
 #define ENCEDER_PUMP 1
 #define APAGAR_PUMP 0
 
 //HUMEDITY
-#define PIN_HUMEDAD 32
+#define PIN_HUMEDAD 32//D12
 #define ENCENDER_PIN_HUM 1
 #define APAGAR_PIN_HUM 0
 
 //VAR TO STORING VALUE RANGE
 int control_T_max = 20;
-int control_T_min = 20;
+int control_T_min = 15;
 int control_H_max = 50;
 int control_H_min = 40;
 int control_S_max = 60;
