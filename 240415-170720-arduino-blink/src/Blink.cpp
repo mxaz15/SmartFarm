@@ -21,9 +21,11 @@
 #include <string>
 
 
-//INCLUDES
+//DEBUG DEFINES 
 //#define DEBUG_MAIN
-#define DEBUG_HTML
+//#define DEBUG_HTML
+
+
 #define S1_SENSOR_PIN A3
 
 //START WEBSERVER
@@ -204,11 +206,20 @@ void setup() {
       inputMessage = "No message sent";
       inputParam = "none";
     }
+    #ifdef DEBUG_HTML
     Serial.println(inputMessage);
+    #endif
 
+    if(isint){
     request->send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP Return Home </title>"" </head><body bgcolor=96c8a2>""<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>""El parametro " 
                                      + inputParam + " fue modificado, su valor actual es " + inputMessage +
-                                     "<br><a href=\"/\">Return to Home Page</a>");
+                                     "<br><a href=\"/\">Volver a la paagina principal</a>");
+    }
+    else{
+    request->send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP Return Home </title>"" </head><body bgcolor=96c8a2>""<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>""<br>Valor no modificado, se ingreso " 
+                                     + inputMessage +" y debe ingresar un numero" "<br>Por favor ingrese el valor nuevamente.""<br><a href=\"/\">Volver a la pagina principal</a>");
+
+              }
                                      
 
   });
