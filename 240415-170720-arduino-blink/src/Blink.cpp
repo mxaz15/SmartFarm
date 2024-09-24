@@ -33,11 +33,16 @@ AsyncWebServer server(80);
 //const char* ssid = "MarielSalinas";
 //const char* password = "segfue9199";
 
+
+
 //const char* ssid = "TP-Link_8CD8";
 //const char* password = "wifi2024";
 
-const char* ssid = "moto";
-const char* password = "moto1234";
+//const char* ssid = "moto";
+//const char* password = "moto1234";
+
+const char* ssid = "MQAZ 4928";
+const char* password = "7B%b2027";
 
 
 const char* PARAM_MESSAGE = "message";
@@ -50,21 +55,42 @@ const char* PARAM_INPUT_5 = "Suelo_max";
 const char* PARAM_INPUT_6 = "Suelo_min";
 
 //Var to storing value
-int T_max;
-int T_min;
-int H_max;
-int H_min;
-int S_max;
-int S_min;
+int T_max_actual;
+int T_min_actual;
+int H_max_actual;
+int H_min_actual;
+int S_max_actual;
+int S_min_actual;
 
 
 // HTML web page to handle 3 input fields (input1, input2, input3)
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html><head>
+  
   <title>ESP Input Form</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   </head><body bgcolor=96c8a2>
+
+<style>
+    /* Estilo del botón para moverlo a la parte superior izquierda, darle un fondo gris y letras verdes */
+    .styled-button {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      background-color: #D3D3D3; /* Fondo gris claro */
+      color: green;              /* Letras verdes */
+      border: 2px solid black;    /* Borde negro */
+      padding: 10px 20px;         /* Espaciado interno */
+      font-size: 16px;            /* Tamaño del texto */
+      cursor: pointer;            /* Cursor cambia al pasar sobre el botón */
+    }
+  </style>
+
   <h1 align="center">AGRICULTURA INTELIGENTE</h1>
+
+  <!-- Botón "Valores Actuales Configurados" con estilo modificado -->
+  <button class="styled-button" onclick="window.location.href='/new_page'">Valores Actuales Configurados</button>
+
   
   <form action="/get">
     <p align="center">Temperatura Maxima</p>
@@ -99,9 +125,23 @@ const char index_html[] PROGMEM = R"rawliteral(
     <p align="center">Nivel Minimo de Humedad en Suelo</p> 
     <p align="center"> <input type="text" name="Suelo_min" autofocus placeholder="Introducir Valor Numerico">
     <input type="submit" value="Ingresar" ></p>
-    
-  </form>
+    </form><br>
+
+
 </body></html>)rawliteral";
+
+
+const char index_html_2[] PROGMEM = R"rawliteral(
+  <!DOCTYPE HTML><html><head>
+  <title>ESP Input Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body bgcolor=96c8a2>
+  <h1 align="center">AGRICULTURA INTELIGENTE</h1></head>
+
+  <body>
+  <br><a href='/'>Volver a la pagina principal</a>
+  </body></html>
+)rawliteral";
 
 void notFound(AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
@@ -123,6 +163,7 @@ const int sensor_pin = A3;  /* Soil moisture sensor O/P pin */
 float *data_dht;
 uint32_t time_now = 0;
 uint32_t time_refresh = 0;
+
 
 void setup() {
   Serial.begin(115200);
@@ -149,7 +190,33 @@ void setup() {
   // Send web page with input fields to client
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html);
+    //request->send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP Return Home </title>"" </head><body bgcolor=96c8a2>""<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>""TEMPERATURA MAXIMA " + T_max_actual +"<br><a href=\"/\">Volver a la pagina principal</a>");
+
   });
+
+  //Send a request to the second page
+  server.on("/new_page", HTTP_GET, [](AsyncWebServerRequest *request){
+    String html_page = "<html>";
+    html_page += "<!DOCTYPE HTML><html><head>";
+    html_page += "<title>ESP Input Form</title>";
+    html_page += "<style>";
+    html_page += "p { background-color: #D3D3D3; border: 2px solid black; padding: 10px; margin: 20px auto; width: 50%; text-align: center; }";
+    html_page += "</style>";
+    html_page += "</head><body bgcolor=96c8a2>";
+    html_page += "<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>";
+    html_page += "<h1 align=\"center\">Valores Actuales Configrados</h1>";
+    html_page += "<p>Temperatura maxima actual: " + String(T_max_actual) + "</p>";
+    html_page += "<p>Temperatura minima actual: " + String(T_min_actual) + "</p>";
+    html_page += "<p>Humedad maxima actual: " + String(H_max_actual) + "</p>";
+    html_page += "<p>Humedad minima actual: " + String(H_min_actual) + "</p>";
+    html_page += "<p>Humedad de suelo maxima actual: " + String(S_max_actual) + "</p>";
+    html_page += "<p>Humedad de suelo minima actual: " + String(S_min_actual) + "</p>";
+    html_page += "<br><a href='/'>Volver a la pagina principal</a>";
+    html_page += "</body></html>";
+    
+    request->send(200, "text/html", html_page);
+});
+
 
   // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
@@ -213,7 +280,7 @@ void setup() {
     if(isint){
     request->send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP Return Home </title>"" </head><body bgcolor=96c8a2>""<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>""El parametro " 
                                      + inputParam + " fue modificado, su valor actual es " + inputMessage +
-                                     "<br><a href=\"/\">Volver a la paagina principal</a>");
+                                     "<br><a href=\"/\">Volver a la pagina principal</a>");
     }
     else{
     request->send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP Return Home </title>"" </head><body bgcolor=96c8a2>""<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>""<br>Valor no modificado, se ingreso " 
@@ -245,8 +312,15 @@ void loop() {
   if(time_now - time_refresh > delayMS)
   {
     time_refresh = time_now;
-
     data_dht =  ambiente_get_info();
+
+    //Varaibles to show in a second page.
+    T_max_actual = control_Get_T_max();
+    T_min_actual = control_Get_T_min();
+    H_max_actual = control_Get_H_max();
+    H_min_actual = control_Get_H_min();
+    S_max_actual = control_Get_S_max();
+    S_min_actual = control_Get_S_min();
 
     #ifdef DEBUG_HTML
     Serial.print("T_max ");
