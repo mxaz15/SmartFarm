@@ -72,26 +72,38 @@ const char index_html[] PROGMEM = R"rawliteral(
   </head><body bgcolor=96c8a2>
 
 <style>
-    /* Estilo del botón para moverlo a la parte superior izquierda, darle un fondo gris y letras verdes */
-    .styled-button {
-      position: absolute;
-      top: 40px;
-      left: 40px;
-      background-color: #D3D3D3; /* Fondo gris claro */
-      color: green;              /* Letras verdes */
-      border: 2px solid black;    /* Borde negro */
-      padding: 10px 20px;         /* Espaciado interno */
-      font-size: 16px;            /* Tamaño del texto */
-      cursor: pointer;            /* Cursor cambia al pasar sobre el botón */
-    }
-  </style>
+  .btn-group {
+    display: flex;
+    justify-content: center; /* Centra los botones horizontalmente */
+    margin-bottom: 10px; /* Añade un poco de espacio entre los grupos de botones */
+  }
 
-  <h1 align="center">AGRICULTURA INTELIGENTE</h1>
+  .btn-group button {
+    background-color: #04AA6D; /* Fondo verde */
+    border: 1px solid green; /* Borde verde */
+    color: white; /* Texto blanco */
+    padding: 10px 24px; /* Espaciado */
+    cursor: pointer; /* Icono de mano */
+    margin: 5px; /* Espaciado entre los botones */
+  }
 
-  <!-- Botón "Valores Actuales Configurados" con estilo modificado -->
-  <button class="styled-button" onclick="window.location.href='/new_page'">Valores Actuales Configurados</button>
+  /* Cambiar el color de fondo al pasar el mouse */
+  .btn-group button:hover {
+    background-color: #3e8e41;
+  }
+</style>
 
+   <h1 align="center">AGRICULTURA INTELIGENTE</h1>
+  <div class="btn-group" style="width:100%">
+    <button style="width:10%" onclick="window.location.href='/new_page'">Valores Actuales Configrados</button>
+  </div>
+  <div class="btn-group" style="width:100%">
+    
+  <button style="width:10%" onclick="window.location.href='/actual_value'">Valores Actuales Sensados</button>
+    
+  </div>
   
+ 
   <form action="/get">
     <p align="center">Temperatura Maxima</p>
     <p align="center"><input type="text" name="Temperatura_max" autofocus placeholder="Introducir Valor Numerico"> <input type="submit" value="Ingresar"></p>
@@ -211,6 +223,24 @@ void setup() {
     html_page += "<p>Humedad minima actual: " + String(H_min_actual) + "</p>";
     html_page += "<p>Humedad de suelo maxima actual: " + String(S_max_actual) + "</p>";
     html_page += "<p>Humedad de suelo minima actual: " + String(S_min_actual) + "</p>";
+    html_page += "<br><a href='/'>Volver a la pagina principal</a>";
+    html_page += "</body></html>";
+    
+    request->send(200, "text/html", html_page);
+});
+
+//Send a request to the second page
+  server.on("/actual_value", HTTP_GET, [](AsyncWebServerRequest *request){
+    String html_page = "<html>";
+    html_page += "<!DOCTYPE HTML><html><head>";
+    html_page += "<title>ESP Input Form</title>";
+    html_page += "<style>";
+    html_page += "p { background-color: #D3D3D3; border: 2px solid black; padding: 10px; margin: 20px auto; width: 50%; text-align: center; }";
+    html_page += "</style>";
+    html_page += "</head><body bgcolor=96c8a2>";
+    html_page += "<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>";
+    html_page += "<h1 align=\"center\">Valores Actuales Configrados</h1>";
+    html_page += "<p>Temperatura maxima actual: " + String(T_max_actual) + "</p>";
     html_page += "<br><a href='/'>Volver a la pagina principal</a>";
     html_page += "</body></html>";
     
