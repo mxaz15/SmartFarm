@@ -102,8 +102,26 @@ const char index_html[] PROGMEM = R"rawliteral(
   <button style="width:10%" onclick="window.location.href='/actual_value'">Valores Actuales Sensados</button>
     
   </div>
+    <div class="btn-group" style="width:100%">
+    
+  <button style="width:10%" onclick="window.location.href='/control_param'">Modificar Parametros de Control</button>
+    
+  </div>
   
- 
+  </body></html>
+  
+  )rawliteral";
+
+
+const char index_html_2[] PROGMEM = R"rawliteral(
+  <!DOCTYPE HTML><html><head>
+  
+  <title>ESP Input Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body bgcolor=96c8a2>
+
+   <h1 align="center">AGRICULTURA INTELIGENTE</h1>
+   
   <form action="/get">
     <p align="center">Temperatura Maxima</p>
     <p align="center"><input type="text" name="Temperatura_max" autofocus placeholder="Introducir Valor Numerico"> <input type="submit" value="Ingresar"></p>
@@ -138,20 +156,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <p align="center"> <input type="text" name="Suelo_min" autofocus placeholder="Introducir Valor Numerico">
     <input type="submit" value="Ingresar" ></p>
     </form><br>
-
-
-</body></html>)rawliteral";
-
-
-const char index_html_2[] PROGMEM = R"rawliteral(
-  <!DOCTYPE HTML><html><head>
-  <title>ESP Input Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head><body bgcolor=96c8a2>
-  <h1 align="center">AGRICULTURA INTELIGENTE</h1></head>
-
-  <body>
-  <br><a href='/'>Volver a la pagina principal</a>
+    <br><a href='/'>Volver a la pagina principal</a>
   </body></html>
 )rawliteral";
 
@@ -206,7 +211,12 @@ void setup() {
 
   });
 
-  //Send a request to the second page
+  //Send a request to the change parameter control page
+    server.on("/control_param", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", index_html_2);
+});
+
+  //Send a request to the parameters control values page
   server.on("/new_page", HTTP_GET, [](AsyncWebServerRequest *request){
     String html_page = "<html>";
     html_page += "<!DOCTYPE HTML><html><head>";
