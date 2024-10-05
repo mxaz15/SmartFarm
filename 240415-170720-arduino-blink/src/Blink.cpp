@@ -239,11 +239,12 @@ void setup() {
     html_page += "</style>";
     html_page += "</head><body bgcolor=96c8a2>";
     html_page += "<h1 align=\"center\">AGRICULTURA INTELIGENTE</h1>";
-    html_page += "<h1 align=\"center\">Valores Actuales Configrados</h1>";
-    html_page += "<p>Temperatura maxima actual: " + String(T_max_actual) + "</p>";
+    html_page += "<h1 align=\"center\">Valores Actuales Sensados</h1>";
+    html_page += "<p>Temperatura actual: " + String(data_dht[SENSOR_TEMP_IDX]) + "</p>";
+    html_page += "<p>Humedad actual: " + String(data_dht[SENSOR_HUM_IDX]) + "</p>";
+    html_page += "<p>Nivel de suelo actual: " + String(data_suelo) + "</p>";
     html_page += "<br><a href='/'>Volver a la pagina principal</a>";
     html_page += "</body></html>";
-    
     request->send(200, "text/html", html_page);
 });
 
@@ -343,6 +344,8 @@ void loop() {
   {
     time_refresh = time_now;
     data_dht =  ambiente_get_info();
+    data_suelo = suelo_nivel(S1_SENSOR_PIN);
+
 
     //Varaibles to show in a second page.
     T_max_actual = control_Get_T_max();
@@ -408,8 +411,8 @@ void loop() {
 
   
    
+  //Take actuaL values and send to controler
   
-   data_suelo = suelo_nivel(S1_SENSOR_PIN);
   #ifdef DEBUG_MAIN
    Serial.print("H_Suelo = ");
    Serial.print(data_suelo);  /* Print Temperature on the serial window */
